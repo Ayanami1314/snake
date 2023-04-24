@@ -174,6 +174,7 @@ void winner(graph& g,snake& s1,snake& s2,clock_t ctime,char special_control_sign
             mvprintw(1,0,"Player 1 collides with wall!");
             mvprintw(2,0,"Winner is the 2nd player!");
             refresh();
+            move(0,0);
             system("pause");
         }
         if(snake_is_collision(g,s2)){
@@ -182,6 +183,7 @@ void winner(graph& g,snake& s1,snake& s2,clock_t ctime,char special_control_sign
             mvprintw(1,0,"Player 2 collides with wall!");
             mvprintw(2,0,"Winner is the 2nd player!");
             refresh();
+            move(0,0);
             system("pause");
         }
     }
@@ -194,7 +196,7 @@ bool is_out_of_range(int x,int y,graph& g){
     //move针对碰撞做了一些特化，正常的越界（苹果用）用这个
     return  x<1 || x>g.x_width || y<1 || y>g.y_width; //注意这里包括墙壁，为了处理碰撞的情况
 }
-void intitialize(graph& g,char boundary_signal='#'){
+void initialize(graph& g,char boundary_signal='#'){
     //初始化
     snake1.len = 0;
     snake2.len = 0;
@@ -212,11 +214,11 @@ void intitialize(graph& g,char boundary_signal='#'){
             else g.a[i][j] =' ';
         }
     }
-    for(i=0;i<g.x_width+2;i++){
-        g.a[g.y_width][i]= boundary_signal;
+    for(i=0;i<g.x_width+2;i++) {
+        g.a[g.y_width][i] = boundary_signal;
     }
 }
-void intitialize2(graph& g,char boundary_signal='#'){
+void initialize2(graph& g,char boundary_signal='#'){
     //中等难度初始化
     snake1.len = 0;
     snake2.len = 0;
@@ -241,7 +243,6 @@ void intitialize2(graph& g,char boundary_signal='#'){
         g.a[5][i] = boundary_signal;
         g.a[g.y_width-2][i] = boundary_signal;
     }
-    refresh();
 }
 void intitialize3(graph& g,char boundary_signal='#'){
     //高难度初始化
@@ -276,7 +277,6 @@ void intitialize3(graph& g,char boundary_signal='#'){
         g.a[g.y_width-2-j][5]=boundary_signal;
         g.a[g.y_width-2-j][g.x_width-2]=boundary_signal;
     }
-    refresh();
 }
 void print(graph& g,char boundary_signal='#'){
     /* 打印整个地图，每隔timestep 秒更新一次（在main中用clock()函数计算时间和清屏（system("cls")）实现）
@@ -293,8 +293,11 @@ void print(graph& g,char boundary_signal='#'){
     int row=6,col=0;
     move(6,0);
 //    getyx(stdscr, row, col); // 获取光标位置
+
     for(i=0;i<g.x_width+2;i++){
-        mvprintw(row+i,col,g.a[i]);
+        char* c_s = g.a[i];
+        c_s[g.y_width+2] = '\0';  // 这里给地图最后加上一个'\0'，使得mvprintw能够正常结束，不出现乱码
+        mvprintw(row+i,col,c_s);
         refresh();
     }
     move(0,0);
@@ -331,10 +334,12 @@ void snake_moving(graph& g,snake& s, step next,char boudary_signal='#'){
     // 更新蛇头的坐标
     if(move_is_out_of_range(next_x,next_y,g)){
         winner(g,s,(60-cur_time)*CLOCKS_PER_SEC,'?');
+        refresh();
         return;
     }
     if(g.a[next_x][next_y]==boudary_signal){
         winner(g,s,(60-cur_time)*CLOCKS_PER_SEC,'?');
+        refresh();
         return;
     }
     if(s.no==1){
@@ -370,17 +375,19 @@ void snake_moving(graph& g,snake& s, step next,char boudary_signal='#'){
     }
     g.a[next_x][next_y]=s.signal;// 先判断再更新地图
 }
-bool apple_pos_is_legal(int x, int y, graph& g){
+bool apple_pos_is_legal(int x, int y, graph& g,char boundary_signal = '#'){
     // 判断生成苹果坐标是否合法,合法：不越界、不在蛇身上
-    return !is_out_of_range(x,y,g) && g.a[x][y]!=snake1.signal && g.a[x][y]!=snake2.signal && g.a[x][y]!='#';
+    return !is_out_of_range(x,y,g) && g.a[x][y]!=snake1.signal && g.a[x][y]!=snake2.signal && g.a[x][y]!=boundary_signal;
 }
 point random_generate_apple(graph& g,char apple_signal='o',char signal_1='*',char signal_2='+'){
-    srand(time(NULL)); //随机数种子
-    int x = rand()%g.x_width+1; //产生一个1到x_width的随机整数
-    int y = rand()%g.y_width+1; //产生一个1到y_width的随机整数
-    while(!apple_pos_is_legal(x,y,g)){ //如果坐标不合法，重新生成坐标)
-        g.a[x][y]=apple_signal;
-    }
+    int x,y;
+    do{
+        srand(time(NULL)); //随机数种子
+        x = rand()%g.x_width+1; //产生一个1到x_width的随机整数
+        y = rand()%g.y_width+1; //产生一个1到y_width的随机整数
+    }while(!apple_pos_is_legal(x,y,g));
+    //如果坐标不合法，重新生成坐标
+    g.a[x][y]=apple_signal;
     point apple = {x,y};
     return apple;
 }
@@ -458,6 +465,28 @@ int apple_generate(mode player_mode){
     }
     return apple_generate_time;
 }
+bool find_apple(const graph& g, char apple_signal = 'o'){
+    // 试图寻找apple, 如果地图里面没有apple了，那就立刻重新生成
+    int i,j;
+    bool flag=false;
+    for(i=0;i<g.x_width+2;i++){
+        for(j=0;j<g.y_width+2;j++){
+            if(g.a[i][j]==apple_signal){
+                flag=true;
+                break;
+            }
+        }
+    }
+    return flag;
+}
+bool if_backward(char pre_input, char input){
+    if(pre_input == 'w' && input == 's') return true;
+    if(pre_input == 'a' && input == 'd') return true;
+    if(pre_input == 'W' && input == 'S') return true;
+    if(pre_input == 'A' && input == 'D') return true;
+    return false;
+}
+
 int main() {
     initscr(); // 初始化PDCurses库
 
@@ -477,7 +506,7 @@ int main() {
 
     mvprintw(0,0,"Please choose a mode(1:easy, 2:medium, 3:hard)"); //窗口打印
     move(1,0);//将光标移动到第二行第一列
-
+    refresh();
     int player_mode_num;
     bool valid_input = false;
     while (!valid_input) {
@@ -486,12 +515,12 @@ int main() {
             case '1':
                 player_mode = easy;
                 valid_input = true;
-                intitialize(g);
+                initialize(g);
                 break;
             case '2':
                 player_mode = medium;
                 valid_input = true;
-                intitialize2(g);
+                initialize2(g);
                 break;
             case '3':
                 player_mode = hard;
@@ -502,6 +531,7 @@ int main() {
                 refresh(); // 刷新窗口
                 mvprintw(0, 0, "Illegal input! Please choose mode again......");
                 mvprintw(1,0,"Please choose a mode(1:easy, 2:medium, 3:hard)"); //窗口打印
+                refresh();
         }
     }
     snake_begin(g, 1, 10, 10);
@@ -532,33 +562,43 @@ int main() {
 //    pointboard(snake1,snake2,start_time);
 //    print(g);
 //    move(0,0);
+    char pre_input = start;
+    char ch=pre_input;
     while (1) {
+        if(ch!=ERR) pre_input = ch;
         clock_t current_time = clock();
         double elapsed_time = (double) (current_time - start_time) / CLOCKS_PER_SEC;
         double elapsed_apple_time = (double) (current_time - start_apple_time) / CLOCKS_PER_SEC;
         winner(g,snake1,current_time);
+        refresh();
         if(elapsed_time>0.5){
-            char ch = getch();//windows 自带函数，不会有输入显示
+            ch = getch();//windows 自带函数，不会有输入显示
             //每0.5s，重新读取一次输入
             if(ch==ERR){ //如果没有检测到输入
-                auto_snake_moving(g,snake1,start,moving_time, board_start_time);
+                auto_snake_moving(g,snake1,pre_input,moving_time, board_start_time);
+                refresh();
             }
             else{
-                step next_step_1 = get_next_step_no1(ch);
-                start = ch;
-                pre_direction = next_step_1;
-                snake_moving(g, snake1, next_step_1);
-                if (elapsed_time >= time_step) {// 更新蛇地图
-                    clear();
-                    pointboard(snake1,snake2,board_start_time);
-                    move(6,0);
-                    print(g);
-                    refresh();
-                    move(0,0);
+                if(if_backward(pre_input, ch)){
+                    continue;
                 }
-                //input_constraint();
+                else{
+                    step next_step_1 = get_next_step_no1(ch);
+                    start = ch;
+                    pre_direction = next_step_1;
+                    snake_moving(g, snake1, next_step_1);
+                    if (elapsed_time >= time_step) {// 更新蛇地图
+                        clear();
+                        pointboard(snake1,snake2,board_start_time);
+                        move(6,0);
+                        print(g);
+                        refresh();
+                        move(0,0);
+                    }
+                }
             }
-            if (apple_generate_time <= elapsed_apple_time) { //更新苹果地图
+            bool if_exist_apple= find_apple(g);
+            if (apple_generate_time <= elapsed_apple_time || !if_exist_apple) { //更新苹果地图
                 point new_apple = random_generate_apple(g);
                 while(new_apple.x== last_apple.x && new_apple.y== last_apple.y){
                     new_apple = random_generate_apple(g); // 如果和上个苹果一个位置就重新生成
@@ -571,6 +611,7 @@ int main() {
 //                print(g);
 //                refresh();
 //                move(0,0);
+                refresh();
                 last_apple.x = new_apple.x;
                 last_apple.y = new_apple.y;
                 start_apple_time = current_time;
