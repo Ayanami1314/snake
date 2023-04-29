@@ -21,35 +21,49 @@ using namespace std;
 //    target_link_libraries(${PROJECT_NAME} PRIVATE curses)
 // 在visual studio 里面可以直接运行
 
-
-//void inline winner(){
-//    ;
-//}
-
-
-
 void winner(graph& g,snake& s1,clock_t ctime,char special_control_signal=' '){
     //单个玩家的时候，如果时间清零，则输出分数
     //如果撞墙，则同二玩家
+    int currentScore =score1(ctime);
+    int highScore = readHighScore();
+    static int break_flag = 0; //判断这局游戏有没有打破记录
+    if (currentScore > highScore)
+    {
+        highScore = currentScore;
+        mvprintw(4,0,"######Congratulations,you have beaten the highest record!######");
+        writeHighScore(highScore);
+        refresh();
+        break_flag = 1;
+    }
     if(cur_time<=0){
         system("cls");
         mvprintw(1,0,"SUCH A HIGH-END ORERATION!");
         mvprintw(2,0,"It's hard to imagine how you accomplish it!");
-        mvprintw(3,0,"You got score %d !",score1(60));
+        mvprintw(3,0,"You got score %d !",score1(ctime));
         refresh();
         system("pause"); //停住
     }
     else{
         if(snake_is_collision(g,s1,special_control_signal)){
             system("cls");
-            mvprintw(1,0,"Game over!");
-            mvprintw(2,0, "Unfortunately......");
-            mvprintw(3,0,"You hit the wall!");
-            mvprintw(4,0,"You got score: %d !",score1(60));
-            mvprintw(5,5,"......What a pity!");
-            mvprintw(6,0,"But that's OK, you can try again~ ");
-            refresh();
-            system("pause");
+            if(break_flag){
+                system("cls");
+                mvprintw(1,0,"SUCH A HIGH-END ORERATION!");
+                mvprintw(2,0,"It's hard to imagine how you accomplish it!");
+                mvprintw(3,0,"You got score %d !",score1(ctime));
+                refresh();
+                system("pause");
+            }
+            else{
+                mvprintw(1,0,"Game over!");
+                mvprintw(2,0, "Unfortunately......");
+                mvprintw(3,0,"You hit the wall!");
+                mvprintw(4,0,"You got score: %d !",score1(ctime));
+                mvprintw(5,5,"......What a pity!");
+                mvprintw(6,0,"But that's OK, you can try again~ ");
+                refresh();
+                system("pause");
+            }
         }
     }
 }
@@ -67,38 +81,36 @@ void snake_moving(graph& g,snake& s, step next,char boudary_signal='#'){
         refresh();
         return;
     }
-    if(s.no==1){
-        snake1.head.x = next_x;
-        snake1.head.y = next_y;
-        snake1.body.push_back(snake1.head);
+    static int flag = 1; // 判断位置是否发生变化，一次变化只更新一次printword
+    if(flag){
+        point next_loc;
+        next_loc.x = next_x;
+        next_loc.y = next_y;
+        printword(g, next_loc);
+        refresh();
+        flag = 0;
     }
-    if(s.no==2){
-        snake2.head.x = next_x;
-        snake2.head.y = next_y;
-        snake2.body.push_back(snake2.head);
-    }
+    // 更新头部
+    s.head.x = next_x;
+    s.head.y = next_y;
+    s.body.push_back(s.head);
+
     // 更新地图
 
     // 更新蛇尾
     if(!isapple(g,next_x,next_y)){
         //清除尾部
         g.a[s.tail.x][s.tail.y] = ' ';
-        if(s.no == 1){
-            snake1.body.pop_front();//删除原来的蛇尾
-            snake1.tail = snake1.body[0];//蛇尾的起始位置
-        }
-        if(s.no == 2){
-            snake2.body.pop_front();//删除原来的蛇尾
-            snake2.tail = snake2.body[0];//蛇尾的起始位置
-        }
+        s.body.pop_front();//删除原来的蛇尾
+        s.tail = snake1.body[0];//蛇尾的起始位置
     }
     else{
         //蛇伸长1
         g.a[s.tail.x][s.tail.y] = s.signal;
-        if(s.no==1) snake1.len++;
-        if(s.no==2) snake2.len++;
+        s.len++;
     }
     g.a[next_x][next_y]=s.signal;// 先判断再更新地图
+    flag = 1; // 更新过位置的标志
 }
 bool if_backward(char pre_input, char input){
     if(pre_input == 'w' && input == 's') return true;
@@ -120,14 +132,13 @@ void auto_snake_moving(graph&g,snake&s,char ch_for_direction,clock_t& start_time
     step auto_next;
     switch(player_no){
         case 1:auto_next = get_next_step_no1(ch_for_direction);break;
-        case 2:auto_next = get_next_step_no2(ch_for_direction);break;
+
         default: return;
     }
-
     if(double(now - start_time)/CLOCKS_PER_SEC >= delta_t){ // 别忘记除CLOCKS_PER_SEC
-        snake_moving(g,s,auto_next);
         clear();
-        pointboard(snake1,snake2,board_start_time);
+        snake_moving(g,s,auto_next);
+        pointboard(snake1,board_start_time);
         refresh();
         move(6,0);
         print(g);
@@ -202,7 +213,7 @@ int main() {
                 snake_moving(g, snake1, next_step_1);
                 if (elapsed_time >= time_step) {// 更新蛇地图
                     clear();
-                    pointboard(snake1,snake2,board_start_time);
+                    pointboard(snake1,board_start_time);
                     move(6,0);
                     print(g);
                     //refresh();
