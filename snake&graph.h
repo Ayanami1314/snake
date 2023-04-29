@@ -52,36 +52,36 @@ step get_next_step_no1(char input) {
     }
     return next;
 }
-step get_next_step_no2(char input){
-    // 键盘读取2号玩家，↑←↓→的移动
-
-    char ch;
-    step next;
-    if(int(input) == 224 || int(input) == 0){
-        ch = getch(); // 读取第二个字符,读箭头的特殊方法，箭头是由两个字符组成的，第一个是0/224的标记符
-        switch (ch) {
-            case 72: // 上箭头
-                next.x = next_step[0][0];
-                next.y = next_step[0][1];
-                break;
-            case 80: // 下箭头
-                next.x = next_step[1][0];
-                next.y = next_step[1][1];
-                break;
-            case 75: // 左箭头
-                next.x = next_step[2][0];
-                next.y = next_step[2][1];
-                break;
-            case 77: // 右箭头
-                next.x = next_step[3][0];
-                next.y = next_step[3][1];
-                break;
-            default:
-                break;
-        }
-    }
-    return next;
-}
+//step get_next_step_no2(char input){
+//    // 键盘读取2号玩家，↑←↓→的移动
+//
+//    char ch;
+//    step next;
+//    if(int(input) == 224 || int(input) == 0){
+//        ch = getch(); // 读取第二个字符,读箭头的特殊方法，箭头是由两个字符组成的，第一个是0/224的标记符
+//        switch (ch) {
+//            case 72: // 上箭头
+//                next.x = next_step[0][0];
+//                next.y = next_step[0][1];
+//                break;
+//            case 80: // 下箭头
+//                next.x = next_step[1][0];
+//                next.y = next_step[1][1];
+//                break;
+//            case 75: // 左箭头
+//                next.x = next_step[2][0];
+//                next.y = next_step[2][1];
+//                break;
+//            case 77: // 右箭头
+//                next.x = next_step[3][0];
+//                next.y = next_step[3][1];
+//                break;
+//            default:
+//                break;
+//        }
+//    }
+//    return next;
+//}
 bool snake_is_collision(graph&g, snake& s, char special_signal = ' '){
     //头在x,y=0/width+1 时碰撞
     int x = s.head.x;
@@ -103,17 +103,10 @@ void print(graph& g,char boundary_signal='#'){
      */
     // a 的 大小应该是x_width+2,y_width+2, 边界符号#
     // 实际过程中，蛇的坐标都应该从1开始计数，0是边界
-    int i,j;
-//    for(i=0;i<g.x_width+2;i++){
-//        for(j=0;j<g.y_width+2;j++){
-//            putchar(g.a[i][j]); //实时输出
-//        }
-//        putchar('\n'); //换行
-//    }
+    // 最初想用putchar 但会和mvprintw冲突，于是放弃
+    int i;
     int row=6,col=0;
     move(6,0);
-//    getyx(stdscr, row, col); // 获取光标位置
-
     for(i=0;i<g.x_width+2;i++){
         char * c_s = g.a[i];
         c_s[g.y_width+2] = '\0';  // 这里给地图最后加上一个'\0'，使得mvprintw能够正常结束，不出现乱码
@@ -135,15 +128,15 @@ void snake_begin(graph& g,int no,int begin_x,int begin_y){
         snake1.body.push_back(snake1.head);
     }
 
-    if(no==2){
-        snake2.len=1;
-        snake2.head.x = begin_x;
-        snake2.head.y = begin_y;
-        snake2.tail.x = begin_x;
-        snake2.tail.y = begin_y;
-        g.a[begin_x][begin_y] = snake2.signal;
-        snake2.body.push_back(snake2.head);
-    }
+//    if(no==2){
+//        snake2.len=1;
+//        snake2.head.x = begin_x;
+//        snake2.head.y = begin_y;
+//        snake2.tail.x = begin_x;
+//        snake2.tail.y = begin_y;
+//        g.a[begin_x][begin_y] = snake2.signal;
+//        snake2.body.push_back(snake2.head);
+//    }
 }
 
 

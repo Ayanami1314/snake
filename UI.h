@@ -10,6 +10,7 @@
 #include <deque> // 用来存储蛇身，不然没法更新蛇尾
 #include <iomanip>
 #include <unistd.h>
+#include "graph_initialize.h"
 void UI_1(){
 
     initscr(); // 初始化PDCurses库

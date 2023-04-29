@@ -8,11 +8,11 @@
 void initialize(graph& g,char boundary_signal='#'){
     //初始化
     snake1.len = 0;
-    snake2.len = 0;
+    //snake2.len = 0;
     snake1.signal = '*';
-    snake2.signal = '+';
+    //snake2.signal = '+';
     snake1.no = 1;
-    snake2.no = 2;
+    //snake2.no = 2;
     int i,j;
     for(i=0;i<g.x_width+2;i++){
         g.a[0][i] = boundary_signal;
@@ -30,11 +30,11 @@ void initialize(graph& g,char boundary_signal='#'){
 void initialize2(graph& g,char boundary_signal='#'){
     //中等难度初始化
     snake1.len = 0;
-    snake2.len = 0;
+    //snake2.len = 0;
     snake1.signal = '*';
-    snake2.signal = '+';
+    //snake2.signal = '+';
     snake1.no = 1;
-    snake2.no = 2;
+    //snake2.no = 2;
     int i,j;
     for(i=0;i<g.x_width+2;i++){
         g.a[0][i] = boundary_signal;
@@ -56,11 +56,11 @@ void initialize2(graph& g,char boundary_signal='#'){
 void initialize3(graph& g,char boundary_signal='#'){
     //高难度初始化
     snake1.len = 0;
-    snake2.len = 0;
+    //snake2.len = 0;
     snake1.signal = '*';
-    snake2.signal = '+';
+    //snake2.signal = '+';
     snake1.no = 1;
-    snake2.no = 2;
+    //snake2.no = 2;
     int i,j;
     for(i=0;i<g.x_width+2;i++){
         g.a[0][i] = boundary_signal;
@@ -90,11 +90,11 @@ void initialize3(graph& g,char boundary_signal='#'){
 void initialize4(graph& g,char boundary_signal='#'){
     //初始化
     snake1.len = 0;
-    snake2.len = 0;
+    //snake2.len = 0;
     snake1.signal = '*';
-    snake2.signal = '+';
+    //snake2.signal = '+';
     snake1.no = 1;
-    snake2.no = 2;
+    //snake2.no = 2;
     int i,j;
     for(i=0;i<g.x_width+2;i++){
         g.a[0][i] = boundary_signal;
@@ -119,11 +119,11 @@ void initialize4(graph& g,char boundary_signal='#'){
 void initialize5(graph& g,char boundary_signal='#'){
     //初始化
     snake1.len = 0;
-    snake2.len = 0;
+    //snake2.len = 0;
     snake1.signal = '*';
-    snake2.signal = '+';
+    //snake2.signal = '+';
     snake1.no = 1;
-    snake2.no = 2;
+    //snake2.no = 2;
     int i,j;
     for(i=0;i<g.x_width+2;i++){
         g.a[0][i] = boundary_signal;

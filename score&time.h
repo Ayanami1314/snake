@@ -25,16 +25,16 @@ int count_time(clock_t& board_start_time){
 }
 int score1(clock_t ctime){
     double rate = 0.1;//存活时间分数折算率
-    return snake1.len+ rate*(60-cur_time);
+    return snake1.len+ int(rate*(60-cur_time));
 }
 const char* int_to_string(int a){
     //把一个数变成字符串，然后可以mvprintw输出
-    std::string s="";
+    std::string s={};
     while(a>0){
-        s+=a%10+'0';
-        a/=10;
+        s += (a%10+'0');
+        a /= 10;
     }
-    std::string rev_s="";
+    std::string rev_s={};
     for(int i=s.length()-1;i>=0;i--){
         rev_s += s[i];
     }

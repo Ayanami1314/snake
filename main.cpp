@@ -1,13 +1,6 @@
-#include <iostream>
-
-#include <random>
 #include <curses.h> // 读取键盘上箭头的库
-#include <deque> // 用来存储蛇身，不然没法更新蛇尾
-#include <iomanip>
-#include <unistd.h>
 #include "cstdlib"
 #include "snake&graph.h"
-#include "graph_initialize.h"
 #include "all_global.h"
 #include "score&time.h"
 #include "apple.h"
@@ -83,7 +76,7 @@ void snake_moving(graph& g,snake& s, step next,char boudary_signal='#'){
     }
     static int flag = 1; // 判断位置是否发生变化，一次变化只更新一次printword
     if(flag){
-        point next_loc;
+        point next_loc={.x=0, .y=0};
         next_loc.x = next_x;
         next_loc.y = next_y;
         printword(g, next_loc);
@@ -112,27 +105,26 @@ void snake_moving(graph& g,snake& s, step next,char boudary_signal='#'){
     g.a[next_x][next_y]=s.signal;// 先判断再更新地图
     flag = 1; // 更新过位置的标志
 }
-bool if_backward(char pre_input, char input){
-    if(pre_input == 'w' && input == 's') return true;
-    if(pre_input == 's' && input == 'w') return true;
-    if(pre_input == 'd' && input == 'a') return true;
-    if(pre_input == 'S' && input == 'W') return true;
-    if(pre_input == 'D' && input == 'A') return true;
-    if(pre_input == 'a' && input == 'd') return true;
-    if(pre_input == 'W' && input == 'S') return true;
-    if(pre_input == 'A' && input == 'D') return true;
-    return false;
-}
+//bool if_backward(char pre_input, char input){
+//    if(pre_input == 'w' && input == 's') return true;
+//    if(pre_input == 's' && input == 'w') return true;
+//    if(pre_input == 'd' && input == 'a') return true;
+//    if(pre_input == 'S' && input == 'W') return true;
+//    if(pre_input == 'D' && input == 'A') return true;
+//    if(pre_input == 'a' && input == 'd') return true;
+//    if(pre_input == 'W' && input == 'S') return true;
+//    if(pre_input == 'A' && input == 'D') return true;
+//    return false;
+//}
 void auto_snake_moving(graph&g,snake&s,char ch_for_direction,clock_t& start_time,clock_t& board_start_time,int player_no=1,double delta_t = 0.5){
     // 贪吃蛇需要有自动移动的部分
     // delta_t：移动一格动作时间间隔，单位s
     // 自动移动部分应在移动完成后自动执行
 
     clock_t now = clock();
-    step auto_next;
+    step auto_next={.x=0, .y=0};
     switch(player_no){
         case 1:auto_next = get_next_step_no1(ch_for_direction);break;
-
         default: return;
     }
     if(double(now - start_time)/CLOCKS_PER_SEC >= delta_t){ // 别忘记除CLOCKS_PER_SEC
@@ -202,14 +194,12 @@ int main() {
         if(elapsed_time>0.5){
             ch = getch();//windows 自带函数，不会有输入显示
             //每0.5s，重新读取一次输入
-            if(ch==ERR || if_backward(pre_input, ch)){ //如果没有检测到输入
+            if(ch==ERR){ //如果没有检测到输入
                 auto_snake_moving(g,snake1,pre_input,moving_time, board_start_time);
                 //refresh();
             }
             else{
                 step next_step_1 = get_next_step_no1(ch);
-                start = ch;
-                pre_direction = next_step_1;
                 snake_moving(g, snake1, next_step_1);
                 if (elapsed_time >= time_step) {// 更新蛇地图
                     clear();
@@ -228,12 +218,6 @@ int main() {
                 }
                 g.a[new_apple.x][new_apple.y] = 'o';
                 g.a[last_apple.x][last_apple.y] = ' '; //清扫原来的苹果位置
-//                clear(); //和system("cls")一个效果，但似乎能避免和mvprintw冲突
-//                pointboard(snake1,snake2,start_time);
-//                move(6,0);
-//                print(g);
-//                refresh();
-//                move(0,0);
                 refresh();
                 last_apple.x = new_apple.x;
                 last_apple.y = new_apple.y;
